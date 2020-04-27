@@ -1,0 +1,18 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "teams-membership-updater-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/teamsMembershipUpdater/TeamsMembershipUpdaterWebPart.js",
+          "manifest": "./src/webparts/teamsMembershipUpdater/TeamsMembershipUpdaterWebPart.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {},
+  "localizedResources": {
+    "TeamsMembershipUpdaterWebPartStrings": "lib/webparts/teamsMembershipUpdater/loc/{locale}.js"
+  }
+}

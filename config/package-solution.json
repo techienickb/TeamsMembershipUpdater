@@ -1,0 +1,13 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "teams-membership-updater-client-side-solution",
+    "id": "5da816cf-c693-4b88-b9bd-a9da3587f05c",
+    "version": "1.0.0.0",
+    "includeClientSideAssets": true,
+    "isDomainIsolated": false
+  },
+  "paths": {
+    "zippedPackage": "solution/teams-membership-updater.sppkg"
+  }
+}
