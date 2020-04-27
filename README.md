@@ -1,8 +1,15 @@
-<img src="logo.960.png" alt="logo.png" style="width: 100px; float: right;" />
+<style>
+img[alt$=">"] {
+  float:right;
+}
+</style>
+
+
+![Teams Membership Updater Logo alt >](/logo.960.png "Teams Membership Updater Logo" =100x)
 
 ## Teams Membership Updater
 
-:::image type="content" source="72f2b53a-f9be-4344-8fec-f4a09961a25b.png" alt-text="Logo":::
+![Preview](72f2b53a-f9be-4344-8fec-f4a09961a25b.png "Preview")
 
 This is a Sharepoint Framework Web Part, you should have SFPx tools installed to build this.
 
