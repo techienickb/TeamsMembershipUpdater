@@ -1,6 +1,13 @@
-## teams-membership-updater
+<img src="logo.960.png" alt="logo.png" style="width: 100px; float: right;" />
 
-This is where you include your WebPart documentation.
+## Teams Membership Updater
+
+:::image type="content" source="72f2b53a-f9be-4344-8fec-f4a09961a25b.png" alt-text="Logo":::
+
+This is a Sharepoint Framework Web Part, you should have SFPx tools installed to build this.
+
+Proposed to be located in the Cloud Services Team Sharepoint Site
+
 
 ### Building the code
 
