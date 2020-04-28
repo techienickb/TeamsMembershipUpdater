@@ -1,32 +1,29 @@
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import { Version } from '@microsoft/sp-core-library';
-import { IPropertyPaneConfiguration, PropertyPaneTextField} from '@microsoft/sp-property-pane';
-import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
-import { Guid } from '@microsoft/sp-core-library';
+import { IPropertyPaneConfiguration, PropertyPaneTextField } from '@microsoft/sp-property-pane';
+import { BaseClientSideWebPart, WebPartContext } from '@microsoft/sp-webpart-base';
 import * as strings from 'TeamsMembershipUpdaterWebPartStrings';
 import TeamsMembershipUpdater from './components/TeamsMembershipUpdater';
 import { ITeamsMembershipUpdaterProps } from './components/ITeamsMembershipUpdaterProps';
-import { sp } from "@pnp/sp/presets/all";
-import { graph } from "@pnp/graph/presets/all";
 import { IDropdownOption } from 'office-ui-fabric-react/lib/Dropdown';
 
 export interface ITeamsMembershipUpdaterWebPartProps {
   description: string;
   items: IDropdownOption[];
+  context: WebPartContext;
 }
 
 
 export default class TeamsMembershipUpdaterWebPart extends BaseClientSideWebPart <ITeamsMembershipUpdaterWebPartProps> {
-
-  public teams = [];
 
   public render(): void {
     const element: React.ReactElement<ITeamsMembershipUpdaterProps> = React.createElement(
       TeamsMembershipUpdater,
       {
         description: this.properties.description,
-        items: []
+        items: [],
+        context: this.context
       }
     );
 
@@ -42,15 +39,7 @@ export default class TeamsMembershipUpdaterWebPart extends BaseClientSideWebPart
   }
 
   protected async onInit(): Promise<void> {
-
     await super.onInit();
-  
-    // other init code may be present
-  
-    sp.setup(this.context);
-    graph.setup({spfxContext: this.context});
-
-    //this.teams = await graph.me.joinedTeams();
   }
 
   protected getPropertyPaneConfiguration(): IPropertyPaneConfiguration {
