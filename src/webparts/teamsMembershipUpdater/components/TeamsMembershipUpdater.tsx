@@ -40,7 +40,7 @@ export interface ITeamsMembershipUpdaterState {
 
 export default class TeamsMembershipUpdater extends React.Component<ITeamsMembershipUpdaterProps, ITeamsMembershipUpdaterState> {
   private _datacolumns: IColumn[];
-  private _data: null;
+  private _data: any[];
 
   constructor(props: ITeamsMembershipUpdaterWebPartProps) {
     super(props);
@@ -98,7 +98,7 @@ export default class TeamsMembershipUpdater extends React.Component<ITeamsMember
         this.setState({ ...this.state, stage: Stage.Done});
       });
     });
-  }//2fad99b2-6b0b-4282-9df9-2d5f53db3e22
+  }
 
   public onEmailChange = (event: React.FormEvent<HTMLDivElement>, item: IDropdownOption): void => {
     this.setState({ ...this.state, csvSelected: item });
@@ -120,21 +120,35 @@ export default class TeamsMembershipUpdater extends React.Component<ITeamsMember
 
         let _delete: Array<string> = new Array<string>();
 
-        //Loop through _members comparing if user is in csv/owners or not, add to _delete, remove from _members arrays
-        //update state and call the graph api to remove users
+        console.log(_members);
+        _members = _members.map(m => {
+          if (this._data.some(value => value[this.state.csvSelected.text] === m) || this.state.groupOwners.some(value => value === m)) return m;
+          else _delete.push(m);
+        });
+        console.log(_members);
+        console.log(_delete);
 
+        this.setState({ ...this.state, stage: Stage.RemovingOrphendMembers });
+        _delete.forEach(async e => {
+          let res = await client.api(`groups/${this.state.selectionDetails.key}/members/${e}/$ref`).delete();
+          console.log(`Removing ${e}`);
+        });
+        this.setState({ ...this.state, stage: Stage.AddingNewMembers });
 
-        //will be called inside the next api call completion
+        this._data.forEach(async e => {
+          if (_members.some(m => m === e[this.state.csvSelected.text]) == false) {
+            const directoryObject = {
+              "@odata.id": `https://graph.microsoft.com/v1.0/directoryObjects/${e[this.state.csvSelected.text]}`
+            };
+            
+            let res = await client.api(`/groups/${this.state.selectionDetails.key}/members/$ref`).post(directoryObject);
+            console.log(`Adding ${e[this.state.csvSelected.text]}`);
+          }
+        });
 
-        let _add: Array<string> = new Array<string>();
+        alert("Done");
 
-        //Loop through csv, find missing emails in _members and add to _add array
-        //update the state and call the graph api to add users
-
-
-        //Finally log with a Sharepoint list this exection and result, maybe
-
-
+        this.setState({ ...this.state, stage: Stage.Done });
       });
     });
   }
