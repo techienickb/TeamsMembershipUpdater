@@ -305,7 +305,7 @@ export default class TeamsMembershipUpdater extends React.Component<ITeamsMember
             <CSVReader onDrop={this.handleOnDrop} onError={this.handleOnError} addRemoveButton config={{ header: true, skipEmptyLines: true }} onRemoveFile={this.handleOnRemoveFile}><span>Drop CSV file here or click to upload.</span></CSVReader>
           </div>
           <Dropdown label="3. Select the Email Addresss Column" onChange={this.onEmailChange} placeholder="Select an option" options={csvItems} disabled={!csvdata} />
-          <Toggle label="4. Remove Orphaned Members" inlineLabel onText="On" offText="Off" onChange={this.onToggleDelete} />
+          <Toggle label="4. Remove Orphaned Members" inlineLabel onText="On" offText="Off" defaultChecked={true} onChange={this.onToggleDelete} />
           <PrimaryButton text="5. Update Membership" onClick={this.onRun} allowDisabledFocus disabled={!csvdata || items.length == 0 || stage != Stage.Done || !csvSelected} />
 
           <Separator>CSV Preview</Separator>
