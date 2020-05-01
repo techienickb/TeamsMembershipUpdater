@@ -1,15 +1,16 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
   "solution": {
-    "name": "teams-membership-updater-client-side-solution",
+    "name": "Teams-membership-updater-client-side-solution",
+    "title": "Teams Membership Updater",
     "id": "5da816cf-c693-4b88-b9bd-a9da3587f05c",
-    "version": "1.0.0.0",
+    "version": "1.0.0.2",
     "includeClientSideAssets": true,
     "isDomainIsolated": false,
     "webApiPermissionRequests": [
       {
         "resource": "Microsoft Graph",
-        "scope": "User.ReadBasic.All"
+        "scope": "User.Read.All"
       },
       {
         "resource": "Microsoft Graph",
