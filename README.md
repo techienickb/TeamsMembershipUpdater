@@ -9,7 +9,7 @@ img[alt$=">"] {
 
 ## Teams Membership Updater
 
-![Preview](72f2b53a-f9be-4344-8fec-f4a09961a25b.png "Preview")
+![Preview](Screenshot-2020-05-01.png "Preview")
 
 This is a Sharepoint Framework Web Part, you should have SFPx tools installed to build this.
 
