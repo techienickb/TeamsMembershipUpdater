@@ -11,18 +11,20 @@ img[alt$=">"] {
 
 ![Preview](Screenshot-2020-05-01.png "Preview")
 
-This is a Sharepoint Framework Web Part, you should have SFPx tools installed to build this.
+This is a [Sharepoint Framework](https://docs.microsoft.com/en-us/sharepoint/dev/spfx/sharepoint-framework-overview) Web Part, you should have SPFx tools installed to build this.
 
-Proposed to be located in the Cloud Services Team Sharepoint Site
+Located in the [Cloud Services Team Sharepoint Site](https://cf.sharepoint.com/sites/cloudservicesteam/SitePages/Teams-Membership-Updater.aspx)
 
 
 ### Building the code
+
+[Setup your Dev Environment](https://docs.microsoft.com/en-us/sharepoint/dev/spfx/set-up-your-development-environment)
 
 ```bash
 git clone the repo
 npm i
 npm i -g gulp
-gulp
+gulp serve
 ```
 
 This package produces the following:
@@ -33,8 +35,7 @@ This package produces the following:
 
 ### Build options
 
-gulp clean - TODO
-gulp test - TODO
-gulp serve - TODO
-gulp bundle - TODO
-gulp package-solution - TODO
+```bash
+gulp bundle --ship
+gulp package-solution --ship
+```
