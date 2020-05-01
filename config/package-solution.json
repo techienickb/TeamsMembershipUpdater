@@ -4,7 +4,7 @@
     "name": "Teams-membership-updater-client-side-solution",
     "title": "Teams Membership Updater",
     "id": "5da816cf-c693-4b88-b9bd-a9da3587f05c",
-    "version": "1.0.0.2",
+    "version": "1.0.0.3",
     "includeClientSideAssets": true,
     "isDomainIsolated": false,
     "webApiPermissionRequests": [

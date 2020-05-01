@@ -4,7 +4,7 @@ import { ITeamsMembershipUpdaterProps } from './ITeamsMembershipUpdaterProps';
 import { DetailsList, DetailsListLayoutMode, IColumn, SelectionMode } from 'office-ui-fabric-react/lib/DetailsList';
 import { ProgressIndicator } from 'office-ui-fabric-react/lib/ProgressIndicator';
 import { Separator } from 'office-ui-fabric-react/lib/Separator';
-import { PrimaryButton, MessageBar, MessageBarType, Link } from 'office-ui-fabric-react';
+import { PrimaryButton, MessageBar, MessageBarType, Link, Toggle } from 'office-ui-fabric-react';
 import { List } from 'office-ui-fabric-react/lib/List';
 import { Dropdown, IDropdownOption } from 'office-ui-fabric-react/lib/Dropdown';
 import { Text } from 'office-ui-fabric-react/lib/Text';
@@ -40,6 +40,7 @@ export interface ITeamsMembershipUpdaterState {
   logs: Array<string>;
   errors: Array<string>;
   logurl: string;
+  delete: boolean;
 }
 
 export default class TeamsMembershipUpdater extends React.Component<ITeamsMembershipUpdaterProps, ITeamsMembershipUpdaterState> {
@@ -62,7 +63,8 @@ export default class TeamsMembershipUpdater extends React.Component<ITeamsMember
       stage: Stage.LoadingTeams,
       logs: [],
       errors: [],
-      logurl: null
+      logurl: null,
+      delete: true
     };
   }
 
@@ -121,6 +123,10 @@ export default class TeamsMembershipUpdater extends React.Component<ITeamsMember
     this.setState({ ...this.state, csvSelected: item });
   }
 
+  public onToggleDelete = (ev: React.MouseEvent<HTMLElement>, checked: boolean): void => {
+    this.setState({ ...this.state, delete: checked});
+  }
+
   public onRun = (e) => {
     this.setState({ ...this.state, stage: Stage.LoadingCurrentMembers});
     this.props.context.msGraphClientFactory.getClient().then((client: MSGraphClient): void => {
@@ -139,21 +145,24 @@ export default class TeamsMembershipUpdater extends React.Component<ITeamsMember
 
         _members = _members.filter(m => {
           if (this._data.some(value => value[this.state.csvSelected.text] === m.mail) || this.state.groupOwners.some(value => value === m.userPrincipalName)) return m;
-          else { _delete.push(m); this.addLog(`Will delete ${m.mail}`); }
+          else { if (this.state.delete == true) { _delete.push(m); this.addLog(`Will delete ${m.mail}`); } }
         });
 
         let req = { requests: Array<any>() };
-
-        this.setState({ ...this.state, stage: Stage.RemovingOrphendMembers });
-        _delete.forEach(e1 => {
-          req.requests.push({
-            id: `${req.requests.length + 1}`,
-            method: "DELETE",
-            url: `groups/${this.state.selectionDetails.key}/members/${e1.id}/$ref`
+        if (this.state.delete == true) {
+          this.setState({ ...this.state, stage: Stage.RemovingOrphendMembers });
+          _delete.forEach(e1 => {
+            req.requests.push({
+              id: `${req.requests.length + 1}`,
+              method: "DELETE",
+              url: `groups/${this.state.selectionDetails.key}/members/${e1.id}/$ref`
+            });
           });
-        });
+        }
 
         let newMembers: Array<string> = new Array<string>();
+
+        console.log(`Selected CSV Column is: ${this.state.csvSelected.text}`);
         
         this._data.forEach(async e2 => {
           if (_members.some(m => m.mail === e2[this.state.csvSelected.text]) == false) {
@@ -204,8 +213,9 @@ export default class TeamsMembershipUpdater extends React.Component<ITeamsMember
       });
     });
   }
-
+  
   public addMembers = (newMembers: string[], client: MSGraphClient): void => {
+    console.log(newMembers);
     this.setState({ ...this.state, stage: Stage.AddingNewMembers });
     let req: any = { requests: Array<any>() };
     newMembers.forEach(e => {
@@ -268,7 +278,6 @@ export default class TeamsMembershipUpdater extends React.Component<ITeamsMember
 
       });
    });
-
   }
 
   public render(): React.ReactElement<ITeamsMembershipUpdaterProps> {
@@ -285,7 +294,7 @@ export default class TeamsMembershipUpdater extends React.Component<ITeamsMember
           {stage == Stage.LoadingTeams && <ProgressIndicator label="Loading Teams" description="Loading the teams you are a member of" /> }
           {stage == Stage.LoadingCurrentMembers && <ProgressIndicator label="Loading Current Members" description="Generating a list of current members" /> }
           {stage == Stage.ComparingMembers && <ProgressIndicator label="Comparing Current Members" description="Comparing the current members with the csv file" /> }
-          {stage == Stage.RemovingOrphendMembers && <ProgressIndicator label="Removing Orphend Members" description="Removing members who are not owners or in the csv file (orphend)" /> }
+          {stage == Stage.RemovingOrphendMembers && <ProgressIndicator label="Removing Orphaned Members" description="Removing members who are not owners or in the csv file (orphend)" /> }
           {stage == Stage.AddingNewMembers && <ProgressIndicator label="Adding New Members" description="Adding members who are new in the csv file" /> }
           {stage == Stage.LoggingDone && <ProgressIndicator label="Logging this request" description="Logging this request for stats purposes" /> }
           <Dropdown label="1. Select the Team (you need to be an owner, it will be checked)" onChange={this.onChange} placeholder="Select an option" options={items} disabled={items.length == 0} />
@@ -296,7 +305,8 @@ export default class TeamsMembershipUpdater extends React.Component<ITeamsMember
             <CSVReader onDrop={this.handleOnDrop} onError={this.handleOnError} addRemoveButton config={{ header: true, skipEmptyLines: true }} onRemoveFile={this.handleOnRemoveFile}><span>Drop CSV file here or click to upload.</span></CSVReader>
           </div>
           <Dropdown label="3. Select the Email Addresss Column" onChange={this.onEmailChange} placeholder="Select an option" options={csvItems} disabled={!csvdata} />
-          <PrimaryButton text="4. Update Membership" onClick={this.onRun} allowDisabledFocus disabled={!csvdata || items.length == 0 || stage != Stage.Done || !csvSelected} />
+          <Toggle label="4. Remove Orphaned Members" inlineLabel onText="On" offText="Off" onChange={this.onToggleDelete} />
+          <PrimaryButton text="5. Update Membership" onClick={this.onRun} allowDisabledFocus disabled={!csvdata || items.length == 0 || stage != Stage.Done || !csvSelected} />
 
           <Separator>CSV Preview</Separator>
           {csvdata && <DetailsList
