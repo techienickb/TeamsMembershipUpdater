@@ -43,6 +43,10 @@ export interface ITeamsMembershipUpdaterState {
   delete: boolean;
 }
 
+export interface IRequest {
+  requests: any[];
+}
+
 export default class TeamsMembershipUpdater extends React.Component<ITeamsMembershipUpdaterProps, ITeamsMembershipUpdaterState> {
   private _datacolumns: IColumn[];
   private _data: any[];
@@ -148,22 +152,18 @@ export default class TeamsMembershipUpdater extends React.Component<ITeamsMember
           else { if (this.state.delete == true) { _delete.push(m); this.addLog(`Will delete ${m.mail}`); } }
         });
 
-        let req = { requests: Array<any>() };
+        let reqs: IRequest[] = [];
         if (this.state.delete == true) {
           this.setState({ ...this.state, stage: Stage.RemovingOrphendMembers });
-          _delete.forEach(e1 => {
-            req.requests.push({
-              id: `${req.requests.length + 1}`,
-              method: "DELETE",
-              url: `groups/${this.state.selectionDetails.key}/members/${e1.id}/$ref`
-            });
-          });
+          let _i,_j,_k,temparray,chunk = 20;
+          for (_i=0,_j=_delete.length,_k=0; _i<_j; _i+=chunk) {
+              temparray = _delete.slice(_i,_i+chunk);
+              reqs.push({ requests: temparray.map(e1 => {_k++; return { id: `${_k}`, method: "DELETE", url: `groups/${this.state.selectionDetails.key}/members/${e1.id}/$ref` };})});
+          }
         }
 
-        let newMembers: Array<string> = new Array<string>();
+        let newMembers: string[] = [];
 
-        console.log(`Selected CSV Column is: ${this.state.csvSelected.text}`);
-        
         this._data.forEach(async e2 => {
           if (_members.some(m => m.mail === e2[this.state.csvSelected.text]) == false) {
             newMembers.push(e2[this.state.csvSelected.text]);
@@ -171,19 +171,23 @@ export default class TeamsMembershipUpdater extends React.Component<ITeamsMember
           }
         });
 
-        if (req.requests.length > 0) { 
-          await client.api("$batch").version("v1.0").post(req, (er, re) => { 
-            if (err) { this.addError(err.message, err); return; }
-            if (re) re.reponses.forEach(e3 => { if (e3.body.error) this.addError(e3.body.error.toString(), e3.body.error); });
-            this.addLog(`Deleting Done`);
-            if (newMembers.length == 0) {
-              this.Done();
+        if (reqs.length > 0) {
+          this.addLog(`${reqs.length} Delete Batches Detected`);
+          reqs.forEach(r => {
+            if (r.requests.length > 0) { 
+              this.addLog(`Deleting ${r.requests.length} users as a batch`);
+              client.api("$batch").version("v1.0").post(r, (er, re) => { 
+                if (err) { this.addError(err.message, err); return; }
+                if (re) re.reponses.forEach(e3 => { if (e3.body.error) this.addError(e3.body.error.toString(), e3.body.error); });
+                this.addLog(`Deleting Batch Done`);
+              });
             }
-            this.addMembers(newMembers, client);
           });
-        } else if (newMembers.length == 0) {
-          this.Done();
-        } else this.addMembers(newMembers, client);
+          if (newMembers.length == 0) this.Done();
+          else this.addMembers(newMembers, client);
+        } 
+        else if (newMembers.length == 0) this.Done();
+        else this.addMembers(newMembers, client);
       });
     });
   }
@@ -215,49 +219,54 @@ export default class TeamsMembershipUpdater extends React.Component<ITeamsMember
   }
   
   public addMembers = (newMembers: string[], client: MSGraphClient): void => {
-    console.log(newMembers);
     this.setState({ ...this.state, stage: Stage.AddingNewMembers });
-    let req: any = { requests: Array<any>() };
-    newMembers.forEach(e => {
-      req.requests.push({
-        id: `${req.requests.length + 1}`,
-        method: "GET",
-        url: `users/${e}?$select=id`
-      });
-    });
+    let reqs: IRequest[] = [];
+    let _i,_j,_k,temparray,chunk = 20;
+    for (_i=0,_j=newMembers.length,_k=0; _i<_j; _i+=chunk) {
+        temparray = newMembers.slice(_i,_i+chunk);
+        reqs.push({ requests: temparray.map(e => {_k++; return { id: `${_k}`, method: "GET", url: `users/${e}?$select=id` };})});
+    }
+
     this.addLog(`Getting Object IDs for ${newMembers.length} Members to Add from Graph`);
-    client.api("$batch").version("v1.0").post(req, (er, re) => { 
-      if (er) { this.addError(er.message, er); return; }
-      req.requests = new Array<any>();
-      if (re) {
-        re.responses.forEach(e => {
-          if (e.body.error) this.addError(e.body.error.toString(), e.body.error);
-          else { 
-            req.requests.push({
-              id: `${req.requests.length + 1}`,
-              method: "POST",
-              url: `groups/${this.state.selectionDetails.key}/members/$ref`,
-              headers: { "Content-Type": "application/json" },
-              body: { "@odata.id": `https://graph.microsoft.com/v1.0/directoryObjects/${e.body.id}` }
-            });
-          }
-        });
-        this.addLog(`Adding ${req.requests.length} Members`);
-        client.api("$batch").version("v1.0").post(req, (err, res) => {
-          if (err) { this.addError(err.message, err); return;}
-          req.requests = new Array<any>();
-          if (res) {
-            res.responses.forEach(e => {
-              if (e.body.error) this.addError(e.body.error.toString(), e.body.error);
-            });
+    for (let i = 0; i < reqs.length; i++) {
+      console.log("Starting batch job " + i);
+      console.log(reqs[i]);
+      client.api("$batch").version("v1.0").post(reqs[i], (er, re) => { 
+        console.log(re);
+        if (er) { this.addError(er.message, er); return; }
+        let newreq: IRequest = { requests: [] };
+        if (re) {
+          re.responses.forEach(e => {
+            if (e.body.error) this.addError(e.body.error.toString(), e.body.error);
+            else { 
+              newreq.requests.push({
+                id: `${newreq.requests.length + 1}`,
+                method: "POST",
+                url: `groups/${this.state.selectionDetails.key}/members/$ref`,
+                headers: { "Content-Type": "application/json" },
+                body: { "@odata.id": `https://graph.microsoft.com/v1.0/directoryObjects/${e.body.id}` }
+              });
+            }
+          });
+          console.log("Adding");
+          this.addLog(`Adding ${newreq.requests.length} Members`);
+          client.api("$batch").version("v1.0").post(newreq, (err, res) => {
+            if (err) { this.addError(err.message, err); return;}
+            if (res) {
+              res.responses.forEach(e => {
+                if (e.body.error) this.addError(e.body.error.toString(), e.body.error);
+              });
+              this.addLog("Adding Done");
+              this.Done();
+            }
             this.addLog("Adding Done");
             this.Done();
-          }
-          this.addLog("Adding Done");
-          this.Done();
-        });
-      }
-    });
+          });
+        }
+      });
+      
+    }
+
   }
   
   public componentDidMount(): void {
