@@ -178,7 +178,7 @@ export default class TeamsMembershipUpdater extends React.Component<ITeamsMember
               this.addLog(`Deleting ${r.requests.length} users as a batch`);
               client.api("$batch").version("v1.0").post(r, (er, re) => { 
                 if (err) { this.addError(err.message, err); return; }
-                if (re) re.reponses.forEach(e3 => { if (e3.body.error) this.addError(e3.body.error.toString(), e3.body.error); });
+                if (re) re.reponses.forEach(e3 => { if (e3.body.error) this.addError(e3.body.error.message, e3.body.error); });
                 this.addLog(`Deleting Batch Done`);
               });
             }
@@ -237,7 +237,7 @@ export default class TeamsMembershipUpdater extends React.Component<ITeamsMember
         let newreq: IRequest = { requests: [] };
         if (re) {
           re.responses.forEach(e => {
-            if (e.body.error) this.addError(e.body.error.toString(), e.body.error);
+            if (e.body.error) this.addError(e.body.error.message, e.body.error);
             else { 
               newreq.requests.push({
                 id: `${newreq.requests.length + 1}`,
@@ -254,7 +254,7 @@ export default class TeamsMembershipUpdater extends React.Component<ITeamsMember
             if (err) { this.addError(err.message, err); return;}
             if (res) {
               res.responses.forEach(e => {
-                if (e.body.error) this.addError(e.body.error.toString(), e.body.error);
+                if (e.body.error) this.addError(e.body.error.message, e.body.error);
               });
               this.addLog("Adding Done");
               this.Done();
