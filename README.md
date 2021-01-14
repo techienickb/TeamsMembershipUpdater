@@ -44,3 +44,5 @@ gulp package-solution --ship
 
 * go to your sharepoint app catalog and upload the pkg file
 * approve the API access in sharepoint admin
+* Add the app to a sharepoint site
+* Add the Webpart to a page on a sharepoint site
