@@ -39,3 +39,8 @@ This package produces the following:
 gulp bundle --ship
 gulp package-solution --ship
 ```
+
+### Sharepoint
+
+* go to your sharepoint app catalog and upload the pkg file
+* approve the API access in sharepoint admin
